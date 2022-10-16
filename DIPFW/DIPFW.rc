@@ -172,6 +172,13 @@ BEGIN
                 MENUITEM "median",                      ID_POINTPROCESSING_MEDIAN32803
             END
         END
+        POPUP "Morphologi"
+        BEGIN
+            MENUITEM "erosion",                     ID_MORPHOLOGI_EROSION
+            MENUITEM "dilation",                    ID_MORPHOLOGI_DILATION
+            MENUITEM "opening",                     ID_MORPHOLOGI_OPENING
+            MENUITEM "closing",                     ID_MORPHOLOGI_CLOSING
+        END
     END
     POPUP "â(&W)"
     BEGIN

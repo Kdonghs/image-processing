@@ -73,6 +73,10 @@ public:
 	afx_msg void OnPointprocessingHpf();
 	afx_msg void OnPointprocessingImpulsenoise();
 	afx_msg void OnPointprocessingMedian32803();
+	afx_msg void OnMorphologiErosion();
+	afx_msg void OnMorphologiDilation();
+	afx_msg void OnMorphologiOpening();
+	afx_msg void OnMorphologiClosing();
 };
 
 

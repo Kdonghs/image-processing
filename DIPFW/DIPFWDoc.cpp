@@ -43,6 +43,10 @@ BEGIN_MESSAGE_MAP(CDIPFWDoc, CDocument)
 	ON_COMMAND(ID_POINTPROCESSING_HPF, &CDIPFWDoc::OnPointprocessingHpf)
 	ON_COMMAND(ID_POINTPROCESSING_IMPULSENOISE, &CDIPFWDoc::OnPointprocessingImpulsenoise)
 	ON_COMMAND(ID_POINTPROCESSING_MEDIAN32803, &CDIPFWDoc::OnPointprocessingMedian32803)
+	ON_COMMAND(ID_MORPHOLOGI_EROSION, &CDIPFWDoc::OnMorphologiErosion)
+	ON_COMMAND(ID_MORPHOLOGI_DILATION, &CDIPFWDoc::OnMorphologiDilation)
+	ON_COMMAND(ID_MORPHOLOGI_OPENING, &CDIPFWDoc::OnMorphologiOpening)
+	ON_COMMAND(ID_MORPHOLOGI_CLOSING, &CDIPFWDoc::OnMorphologiClosing)
 END_MESSAGE_MAP()
 
 
@@ -415,22 +419,23 @@ void CDIPFWDoc::OnPointprocessingLpf()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	// low pass filter
 	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
-	int i, j, a, b, sum,con;
+	int i, j, a, b, sum,cnt;
 	for (i = 0; i < m_nHeight; i++)
 	{
 		for (j = 0; j < m_nWidth; j++)
 		{
 			sum = 0;
+			cnt = 0;
 			for (a = i - 1; a < i + 2; a++) {
 				for (b = j - 1; b < j + 2; b++) {
 					if (a<0 || b<0 || a>m_nWidth-1 || b>m_nHeight-1) {
-						sum += 0;
+						cnt++;
 						continue;
 					}
 					sum += m_pImgOpen[a][b] / 18;
 				}
 			}
-			pImg[i][j] = (m_pImgOpen[i][j] / 18 * (9)) + sum;
+			pImg[i][j] = (m_pImgOpen[i][j] / 18 * (9-cnt)) + sum;
 		}
 	}
 	MakeNewWindow(pImg, m_nWidth, m_nHeight);
@@ -442,21 +447,24 @@ void CDIPFWDoc::OnPointprocessingHpf()
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	// high pass filter
 	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
-	int i, j, a, b, sum;
+	int i, j, a, b, sum, cnt;
 	for (i = 0; i < m_nHeight; i++)
 	{
 		for (j = 0; j < m_nWidth; j++)
 		{
-			sum = (m_pImgOpen[i][j] * (9));
+			
+			sum = 0;
+			cnt = 0;
 			for (a = i - 1; a < i + 2; a++) {
 				for (b = j - 1; b < j + 2; b++) {
 					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
-						sum -= 0;
+						cnt++;
 						continue;
 					}
 					sum -= m_pImgOpen[a][b];
 				}
 			}
+			sum += (m_pImgOpen[i][j] * (9-cnt));
 			
 			if (sum < 0 ) {
 				sum *= -1;
@@ -535,5 +543,162 @@ void CDIPFWDoc::OnPointprocessingMedian32803()
 			}
 		}
 	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnMorphologiErosion()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Erosion
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i, j, a, b, max;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			max = 0;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (m_pImgOpen[a][b]>max) {
+						max = m_pImgOpen[a][b];
+					}
+				}
+			}
+			pImg[i][j] = max;
+		}
+	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnMorphologiDilation()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Dilation
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i, j, a, b, min;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			min = 255;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (m_pImgOpen[a][b] < min) {
+						min = m_pImgOpen[a][b];
+					}
+				}
+			}
+			pImg[i][j] = min;
+		}
+	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnMorphologiOpening()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Opening
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	vector<vector<int>>temp(m_nWidth, vector<int>(m_nHeight, 0));
+
+	int i, j, a, b, min,max;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			min = 255;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (m_pImgOpen[a][b] < min) {
+						min = m_pImgOpen[a][b];
+					}
+				}
+			}
+			temp[i][j] = min;
+		}
+	}
+
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			max = 0;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (temp[a][b] > max){
+						max = temp[a][b];
+					}
+				}
+			}
+			pImg[i][j] = max;
+		}
+	}
+
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnMorphologiClosing()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Closing
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	vector<vector<int>>temp(m_nWidth, vector<int>(m_nHeight,0));
+
+	int i, j, a, b, min, max;
+
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			max = 0;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (m_pImgOpen[a][b] > max) {
+						max = m_pImgOpen[a][b];
+					}
+				}
+			}
+			temp[i][j] = max;
+		}
+	}
+
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			min = 255;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						continue;
+					}
+					if (temp[a][b] < min) {
+						min = temp[a][b];
+					}
+				}
+			}
+			pImg[i][j] = min;
+		}
+	}
+
 	MakeNewWindow(pImg, m_nWidth, m_nHeight);
 }
