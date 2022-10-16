@@ -12,6 +12,9 @@
 #include "Moravec.h"
 #include "HOG.h"
 
+#include <random>
+#include <vector>
+
 
 #ifdef _DEBUG
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
@@ -36,6 +39,10 @@ BEGIN_MESSAGE_MAP(CDIPFWDoc, CDocument)
 	ON_COMMAND(ID_POINTPROCESSING_ONINVERSE, &CDIPFWDoc::OnPointprocessingOninverse)
 	ON_COMMAND(ID_POINTPROCESSING_BRIGHT, &CDIPFWDoc::OnPointprocessingBright)
 	ON_COMMAND(ID_POINTPROCESSING_DARK, &CDIPFWDoc::OnPointprocessingDark)
+	ON_COMMAND(ID_POINTPROCESSING_LPF, &CDIPFWDoc::OnPointprocessingLpf)
+	ON_COMMAND(ID_POINTPROCESSING_HPF, &CDIPFWDoc::OnPointprocessingHpf)
+	ON_COMMAND(ID_POINTPROCESSING_IMPULSENOISE, &CDIPFWDoc::OnPointprocessingImpulsenoise)
+	ON_COMMAND(ID_POINTPROCESSING_MEDIAN32803, &CDIPFWDoc::OnPointprocessingMedian32803)
 END_MESSAGE_MAP()
 
 
@@ -367,7 +374,13 @@ void CDIPFWDoc::OnPointprocessingBright()
 	{
 		for (j = 0; j < m_nWidth; j++)
 		{
-			pImg[i][j] =  m_pImgOpen[i][j] * 1.2;
+			if (m_pImgOpen[i][j] * 1.2<255) {
+				pImg[i][j] = m_pImgOpen[i][j] * 1.2;
+				
+			}
+			else {
+				pImg[i][j] = 255;
+			}
 		}
 	}
 	MakeNewWindow(pImg, m_nWidth, m_nHeight);
@@ -391,7 +404,135 @@ void CDIPFWDoc::OnPointprocessingDark()
 			else {
 				pImg[i][j] = 0;
 			}
+		}
+	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnPointprocessingLpf()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// low pass filter
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i, j, a, b, sum,con;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			sum = 0;
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth-1 || b>m_nHeight-1) {
+						sum += 0;
+						continue;
+					}
+					sum += m_pImgOpen[a][b] / 18;
+				}
+			}
+			pImg[i][j] = (m_pImgOpen[i][j] / 18 * (9)) + sum;
+		}
+	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnPointprocessingHpf()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// high pass filter
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i, j, a, b, sum;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			sum = (m_pImgOpen[i][j] * (9));
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a<0 || b<0 || a>m_nWidth - 1 || b>m_nHeight - 1) {
+						sum -= 0;
+						continue;
+					}
+					sum -= m_pImgOpen[a][b];
+				}
+			}
 			
+			if (sum < 0 ) {
+				sum *= -1;
+			}
+			pImg[i][j] = sum;
+		}
+	}
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnPointprocessingImpulsenoise()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Impulse noise 
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i,j, noise;
+	noise = m_nWidth * m_nHeight * 5 / 100;
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<int> disx(0, m_nWidth-1);
+	std::uniform_int_distribution<int> disy(0, m_nHeight-1);
+	
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			pImg[i][j] = m_pImgOpen[i][j];
+		}
+	}
+
+	for ( i = 0; i < noise; i++)
+	{
+		if (i%2==0)
+		{
+			pImg[disx(gen)][disy(gen)]=255;
+		}
+		else
+		{
+			pImg[disx(gen)][disy(gen)] = 0;
+		}
+		
+	}
+
+	MakeNewWindow(pImg, m_nWidth, m_nHeight);
+}
+
+
+void CDIPFWDoc::OnPointprocessingMedian32803()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	// Median filter
+	BYTE** pImg = CreateResultImage(m_nWidth, m_nHeight);
+	int i, j, a, b;
+	vector<int> vc;
+	for (i = 0; i < m_nHeight; i++)
+	{
+		for (j = 0; j < m_nWidth; j++)
+		{
+			vc.clear();
+			for (a = i - 1; a < i + 2; a++) {
+				for (b = j - 1; b < j + 2; b++) {
+					if (a < 0 || b < 0 || a>m_nWidth-1 || b>m_nHeight-1) {
+						vc.push_back(0);
+						continue;
+					}
+					vc.push_back(m_pImgOpen[a][b]);
+				}
+			}
+			sort(vc.begin(),vc.end());
+			if (vc.size() % 2 == 1) {
+				pImg[i][j]=vc[vc.size() / 2];
+			}
+			else {
+				pImg[i][j] = vc[(vc.size()-1) / 2];
+			}
 		}
 	}
 	MakeNewWindow(pImg, m_nWidth, m_nHeight);

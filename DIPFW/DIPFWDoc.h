@@ -69,6 +69,10 @@ public:
 	afx_msg void OnPointprocessingOninverse();
 	afx_msg void OnPointprocessingBright();
 	afx_msg void OnPointprocessingDark();
+	afx_msg void OnPointprocessingLpf();
+	afx_msg void OnPointprocessingHpf();
+	afx_msg void OnPointprocessingImpulsenoise();
+	afx_msg void OnPointprocessingMedian32803();
 };
 
 

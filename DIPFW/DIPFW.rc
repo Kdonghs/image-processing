@@ -166,6 +166,10 @@ BEGIN
                 MENUITEM "Oninverse",                   ID_POINTPROCESSING_ONINVERSE
                 MENUITEM "darkly",                      ID_POINTPROCESSING_DARK
                 MENUITEM "bright",                      ID_POINTPROCESSING_BRIGHT
+                MENUITEM "LPF",                         ID_POINTPROCESSING_LPF
+                MENUITEM "HPF",                         ID_POINTPROCESSING_HPF
+                MENUITEM "Impulse noise",               ID_POINTPROCESSING_IMPULSENOISE
+                MENUITEM "median",                      ID_POINTPROCESSING_MEDIAN32803
             END
         END
     END

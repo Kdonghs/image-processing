@@ -122,6 +122,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnPointprocessingTestcase();
+	afx_msg void OnPointprocessingLpf();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -135,6 +136,7 @@ void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 	ON_COMMAND(ID_POINTPROCESSING_TESTCASE, &CAboutDlg::OnPointprocessingTestcase)
+	ON_COMMAND(ID_POINTPROCESSING_LPF, &CAboutDlg::OnPointprocessingLpf)
 END_MESSAGE_MAP()
 
 // 대화 상자를 실행하기 위한 응용 프로그램 명령입니다.
@@ -150,6 +152,12 @@ void CDIPFWApp::OnAppAbout()
 
 
 void CAboutDlg::OnPointprocessingTestcase()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+}
+
+
+void CAboutDlg::OnPointprocessingLpf()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 }
